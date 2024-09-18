@@ -1,0 +1,26 @@
+name = "buape-go"
+type = "javascript"
+workers_dev = true
+compatibility_date = "2023-09-14"
+
+kv_namespaces = [
+    { binding = "SHORT_LINKS", id = "8956df39673d4657be0993b4a5eaa8da" }
+]
+
+[vars]
+WORKERS_RS_VERSION = "0.0.9"
+
+[build]
+command = "cargo install -q worker-build --version ^0.0.8 && worker-build --release" # required
+
+[build.upload]
+dir = "build/worker"
+format = "modules"
+main = "./shim.mjs"
+
+[[build.upload.rules]]
+globs = ["**/*.wasm"]
+type = "CompiledWasm"
+
+# read more about configuring your Worker via wrangler.toml at:
+# https://developers.cloudflare.com/workers/cli-wrangler/configuration

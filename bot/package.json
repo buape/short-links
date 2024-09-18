@@ -1,0 +1,21 @@
+{
+  "name": "buape-go-bot",
+  "module": "src/index.ts",
+  "scripts": {
+    "build": "wrangler deploy",
+    "tail": "wrangler tail",
+    "dev": "wrangler dev && wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240821.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "@buape/carbon": "https://pkg.pr.new/buape/carbon/@buape/carbon@90",
+    "wrangler": "^3.74.0"
+  }
+}
