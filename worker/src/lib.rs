@@ -52,7 +52,7 @@ fn handle_root(host: &str) -> Result<Response> {
     };
 
     let redirect_url = format!("https://{}/", root_domain);
-    return Response::redirect(Url::parse(&redirect_url)?);
+    Response::redirect(Url::parse(&redirect_url)?)
 }
 
 async fn handle_list(host: &str, env: &Env) -> Result<Response> {
@@ -94,29 +94,42 @@ async fn handle_stats(host: &str, slug: &str, env: &Env) -> Result<Response> {
 
 async fn handle_create(mut req: Request, host: &str, env: &Env) -> Result<Response> {
     let kv = env.kv("SHORT_LINKS")?;
-    let form = req.form_data().await?;
 
-    let slug = match form.get("slug") {
-        Some(FormEntry::Field(value)) => value,
-        _ => return Response::error("Missing 'slug' field", 400),
+    let json_body = match req.json::<serde_json::Value>().await {
+        Ok(json) => json,
+        Err(_e) => {
+            return Response::error("Invalid JSON body", 400);
+        }
     };
 
-    let redirect_url = match form.get("url") {
-        Some(FormEntry::Field(value)) => value,
-        _ => return Response::error("Missing 'url' field", 400),
-    };
+    let slug = json_body["slug"].as_str().unwrap_or("");
+    let redirect_url = json_body["url"].as_str().unwrap_or("");
+
+    if slug.is_empty() || redirect_url.is_empty() {
+        return Response::error("Missing required fields: 'slug' and 'url' are required", 400);
+    }
 
     let key = format!("{}:{}", host, slug);
     let short_link = ShortLink {
-        redirect_url,
+        redirect_url: redirect_url.to_string(),
         hits: 0,
     };
 
-    kv.put(&key, &serde_json::to_string(&short_link)?)?
-        .execute()
-        .await?;
-
-    Response::ok(format!("Short link created: https://{}/{}", host, slug))
+    match kv.put(&key, &serde_json::to_string(&short_link)?)?.execute().await {
+        Ok(_) => {
+            Response::ok(json!({
+                "message": "Short link created successfully",
+                "short_url": format!("https://{}/{}", host, slug)
+            }).to_string())
+            .map(|mut resp| {
+                resp.headers_mut().set("Content-Type", "application/json").unwrap();
+                resp
+            })
+        },
+        Err(_e) => {
+            Response::error("Internal server error", 500)
+        }
+    }
 }
 
 async fn handle_redirect(host: &str, slug: &str, env: &Env) -> Result<Response> {
