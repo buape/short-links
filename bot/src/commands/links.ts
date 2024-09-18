@@ -1,15 +1,24 @@
 import {
+  type APIApplicationCommandBasicOption,
   ApplicationCommandOptionType,
   Command,
   type CommandInteraction,
   type CommandOptions,
   CommandWithSubcommands,
 } from "@buape/carbon";
+import type { Env } from "../index";
 
 class CreateLink extends Command {
+  private env: Env;
+
+  constructor(env: Env) {
+    super();
+    this.env = env;
+  }
+
   name = "create";
   description = "Create a short-link via Buape Link";
-  options: CommandOptions = [
+  options: APIApplicationCommandBasicOption[] = [
     {
       name: "domain",
       type: ApplicationCommandOptionType.String,
@@ -19,7 +28,7 @@ class CreateLink extends Command {
       choices: [
         {
           name: "go.buape.com",
-          value: "go.buape.com",
+          value: "go-new.buape.com",
         },
         {
           name: "go.kiai.app",
@@ -43,10 +52,8 @@ class CreateLink extends Command {
 
   async run(interaction: CommandInteraction) {
     const domain = interaction.options.getString("domain");
-    const url = interaction.options?.getString("url");
-    const slug = interaction.options?.getString("slug");
-
-    console.log(interaction);
+    const url = interaction.options.getString("url");
+    const slug = interaction.options.getString("slug");
 
     if (!domain || !url || !slug) {
       return interaction.reply({ content: "Missing required options" });
@@ -57,19 +64,36 @@ class CreateLink extends Command {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${this.env.ACCESS_KEY}`,
         },
         body: JSON.stringify({ url, slug }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       return interaction.reply({
-        content: `Short-link created: ${response.url}`,
+        content: `Short-link created: ${data.short_url}`,
       });
-    } catch (e) {
-      return interaction.reply({ content: "Failed to create short-link" });
+    } catch (error: any) {
+      console.error("Error:", error);
+      return interaction.reply({
+        content: `Error creating short-link: ${error.message}`,
+      });
     }
   }
 }
 
-class Sub2 extends Command {
+class DeleteLink extends Command {
+  private env: Env;
+
+  constructor(env: Env) {
+    super();
+    this.env = env;
+  }
+
   name = "sub2";
   description = "Subcommand 2";
   defer = true;
@@ -79,10 +103,16 @@ class Sub2 extends Command {
   }
 }
 
-export default class Subc extends CommandWithSubcommands {
+export default class LinksRootCommand extends CommandWithSubcommands {
+  private env: Env;
   name = "links";
   description = "Short-link root command";
   defer = true;
+  subcommands: Command[];
 
-  subcommands = [new CreateLink(), new Sub2()];
+  constructor(env: Env) {
+    super();
+    this.env = env;
+    this.subcommands = [new CreateLink(this.env), new DeleteLink(this.env)];
+  }
 }

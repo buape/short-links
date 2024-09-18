@@ -1,18 +1,18 @@
 // Import the Carbon client
 import { Client, ClientMode } from "@buape/carbon";
 import type { ExecutionContext } from "@cloudflare/workers-types";
-import LinksCommand from "./commands/ping";
-import PinCommand from "./commands/links";
+import PingCommand from "./commands/ping";
+import LinksRootCommand from "./commands/links";
 
-type Env = {
+export type Env = {
   CLIENT_ID: string;
   PUBLIC_KEY: string;
   DISCORD_TOKEN: string;
+  ACCESS_KEY: string;
 };
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    console.log(env.CLIENT_ID);
     // Create a new Carbon client.
     const client = new Client(
       {
@@ -22,7 +22,7 @@ export default {
         token: env.DISCORD_TOKEN,
         mode: ClientMode.CloudflareWorkers,
       },
-      [new LinksCommand(), new PinCommand()]
+      [new PingCommand(), new LinksRootCommand(env)]
     );
     client.router.get("/deploy", async () => {
       await client.deployCommands();

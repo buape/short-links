@@ -15,7 +15,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@buape/carbon": "https://pkg.pr.new/buape/carbon/@buape/carbon@90",
+    "@buape/carbon": "https://pkg.pr.new/buape/carbon/@buape/carbon@127",
     "wrangler": "^3.74.0"
   }
 }
