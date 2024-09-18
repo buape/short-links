@@ -32,8 +32,8 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
 
     match (method, path.as_str()) {
         (Method::Get, "/") => handle_root(&host),
-        (Method::Get, "/list") => handle_list(&host, &env).await,
-        (Method::Get, p) if p.starts_with("/stats/") => handle_stats(&host, &p[7..], &env).await,
+        (Method::Get, "/list") => handle_list(req, &host, &env).await,
+        (Method::Get, p) if p.starts_with("/stats/") => handle_stats(req, &host, &p[7..], &env).await,
         (Method::Post, "/create") => handle_create(req, &host, &env).await,
         (Method::Get, p) => handle_redirect(&host, &p[1..], &env).await,
         _ => Response::error("Not Found", 404),
@@ -55,7 +55,17 @@ fn handle_root(host: &str) -> Result<Response> {
     Response::redirect(Url::parse(&redirect_url)?)
 }
 
-async fn handle_list(host: &str, env: &Env) -> Result<Response> {
+async fn handle_list(req: Request, host: &str, env: &Env) -> Result<Response> {
+    let auth_header = req.headers().get("Authorization")?.unwrap_or_default();
+    let access_key = env.secret("ACCESS_KEY")?.to_string();
+    if access_key.is_empty() {
+        return Response::error("Internal server error", 500);
+    }
+
+    if auth_header != format!("Bearer {}", access_key) {
+        return Response::error("This maze wasn't meant for you", 401);
+    }
+
     let kv = env.kv("SHORT_LINKS")?;
     let keys = kv.list().prefix(format!("{}:", host)).execute().await?;
 
@@ -76,7 +86,17 @@ async fn handle_list(host: &str, env: &Env) -> Result<Response> {
     Response::from_json(&links)
 }
 
-async fn handle_stats(host: &str, slug: &str, env: &Env) -> Result<Response> {
+async fn handle_stats(req: Request, host: &str, slug: &str, env: &Env) -> Result<Response> {
+    let auth_header = req.headers().get("Authorization")?.unwrap_or_default();
+    let access_key = env.secret("ACCESS_KEY")?.to_string();
+    if access_key.is_empty() {
+        return Response::error("Internal server error", 500);
+    }
+
+    if auth_header != format!("Bearer {}", access_key) {
+        return Response::error("This maze wasn't meant for you", 401);
+    }
+
     let kv = env.kv("SHORT_LINKS")?;
     let key = format!("{}:{}", host, slug);
 
@@ -93,6 +113,16 @@ async fn handle_stats(host: &str, slug: &str, env: &Env) -> Result<Response> {
 }
 
 async fn handle_create(mut req: Request, host: &str, env: &Env) -> Result<Response> {
+    let auth_header = req.headers().get("Authorization")?.unwrap_or_default();
+    let access_key = env.secret("ACCESS_KEY")?.to_string();
+    if access_key.is_empty() {
+        return Response::error("Internal server error", 500);
+    }
+
+    if auth_header != format!("Bearer {}", access_key) {
+        return Response::error("This maze wasn't meant for you", 401);
+    }
+
     let kv = env.kv("SHORT_LINKS")?;
 
     let json_body = match req.json::<serde_json::Value>().await {
