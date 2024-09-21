@@ -96,7 +96,7 @@ class CreateLink extends Command {
       return interaction.reply({ content: "Missing required options" });
     }
 
-    const urlRegex = new RegExp("^https?://[^s/$.?#].[^s]*$", "i");
+    const urlRegex = new RegExp("^https?://[^s]+$", "i");
     if (!urlRegex.test(url)) {
       return interaction.reply({
         content: "Invalid URL. Please provide a valid URL",
