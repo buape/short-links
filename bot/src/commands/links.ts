@@ -96,6 +96,20 @@ class CreateLink extends Command {
       return interaction.reply({ content: "Missing required options" });
     }
 
+    const urlRegex = new RegExp("^(https?://)?([a-z0-9-]+\\.)+[a-z]{2,}$", "i");
+    if (!urlRegex.test(url)) {
+      return interaction.reply({
+        content: "Invalid URL. Please provide a valid URL",
+      });
+    }
+
+    const slugRegex = new RegExp("^[a-z0-9-]+$", "i");
+    if (!slugRegex.test(slug)) {
+      return interaction.reply({
+        content: "Invalid slug. Please provide a valid slug",
+      });
+    }
+
     const value = {
       redirect_url: url,
       hits: 0,
@@ -286,7 +300,6 @@ class ListLinks extends Command {
     > = {};
 
     for (const key of links.keys) {
-      // Check if the key matches the expected format
       if (!key.name.includes(":")) {
         console.warn(`Skipping invalid key format: ${key.name}`);
         continue;
@@ -294,7 +307,6 @@ class ListLinks extends Command {
 
       const [domain, slug] = key.name.split(":");
 
-      // Additional check to ensure both domain and slug are present
       if (!domain || !slug) {
         console.warn(`Skipping invalid key format: ${key.name}`);
         continue;
@@ -309,7 +321,6 @@ class ListLinks extends Command {
       let parsedValue: ShortLink;
       try {
         parsedValue = JSON.parse(value) as ShortLink;
-        // Validate the parsed value
         if (!parsedValue.redirect_url || typeof parsedValue.hits !== "number") {
           console.warn(`Invalid value format for key: ${key.name}`);
           continue;
