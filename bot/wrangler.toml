@@ -1,9 +1,7 @@
-name = "pinbot-cfw"
+name = "buape-go-bot"
 main = "src/index.ts"
 compatibility_date = "2024-09-03"
+kv_namespaces = [
+  { binding = "SHORT_LINKS", id = "8956df39673d4657be0993b4a5eaa8da" }
+]
 
-[vars]
-CLIENT_ID = ''
-DISCORD_TOKEN=""
-PUBLIC_KEY=""
-ACCESS_KEY=""

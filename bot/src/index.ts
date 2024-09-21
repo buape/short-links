@@ -1,6 +1,6 @@
 // Import the Carbon client
 import { Client, ClientMode } from "@buape/carbon";
-import type { ExecutionContext } from "@cloudflare/workers-types";
+import type { ExecutionContext, KVNamespace } from "@cloudflare/workers-types";
 import PingCommand from "./commands/ping";
 import LinksRootCommand from "./commands/links";
 
@@ -8,7 +8,9 @@ export type Env = {
   CLIENT_ID: string;
   PUBLIC_KEY: string;
   DISCORD_TOKEN: string;
+  SHORT_LINKS: KVNamespace;
   ACCESS_KEY: string;
+  INTERNAL_LOGS_WEBHOOK: string;
 };
 
 export default {
@@ -33,4 +35,19 @@ export default {
     // Finally, return the response from Carbon.
     return response;
   },
+};
+
+export const sendToInternalLogs = async (message: string, env: Env) => {
+  await fetch(env.INTERNAL_LOGS_WEBHOOK, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      content: message,
+      allowed_mentions: { parse: [] },
+    }),
+  }).catch((e) => {
+    console.error(`Error sending to internal logs: ${e.message}`);
+  });
 };
