@@ -1,0 +1,13 @@
+name = "buape-go-bot"
+main = "src/index.ts"
+compatibility_date = "2024-09-03"
+kv_namespaces = [
+  { binding = "SHORT_LINKS", id = "REPLACE_ME" }
+]
+
+[vars]
+CLIENT_ID = "REPLACE_ME"
+DISCORD_TOKEN="REPLACE_ME"
+PUBLIC_KEY="REPLACE_ME"
+ACCESS_KEY="REPLACE_ME"
+INTERNAL_LOGS_WEBHOOK="REPLACE_ME"
