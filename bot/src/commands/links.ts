@@ -65,13 +65,17 @@ class CreateLink extends Command {
       required: true,
       choices: [
         {
+          name: "bua.pe",
+          value: "bua.pe",
+        },
+        {
           name: "go.buape.com",
           value: "go.buape.com",
         },
         {
           name: "go.kiai.app",
           value: "go.kiai.app",
-        },
+        }
       ],
     },
     {
@@ -145,13 +149,17 @@ class DeleteLink extends Command {
       required: true,
       choices: [
         {
+          name: "bua.pe",
+          value: "bua.pe",
+        },
+        {
           name: "go.buape.com",
           value: "go.buape.com",
         },
         {
           name: "go.kiai.app",
           value: "go.kiai.app",
-        },
+        }
       ],
     },
     {
@@ -219,13 +227,17 @@ class StatsLink extends Command {
       required: true,
       choices: [
         {
+          name: "bua.pe",
+          value: "bua.pe",
+        },
+        {
           name: "go.buape.com",
           value: "go.buape.com",
         },
         {
           name: "go.kiai.app",
           value: "go.kiai.app",
-        },
+        }
       ],
     },
     {
