@@ -1,28 +1,30 @@
 [package]
 name = "buape-go"
 version = "0.1.0"
-authors = ["Codeize"]
-edition = "2018"
+edition = "2021"
+authors = ["Codeize <mrcodeize@gmail.com>"]
+
+[package.metadata.release]
+release = false
 
 [lib]
-crate-type = ["cdylib", "rlib"]
-path = "src/main.rs"
+crate-type = ["cdylib"]
 
 [features]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-cfg-if = "0.1.2"
-worker = "0.0.9"
-serde_json = "1.0.67"
+worker = "0.6.5"
+serde = { version = "1.0.225", features = ["derive"] }
+serde_json = "1.0.145"
+regex = "1.11.2"
+cfg-if = "1.0.0"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
-console_error_panic_hook = { version = "0.1.1", optional = true }
-serde = "1.0.210"
-regex = "1.10.6"
+console_error_panic_hook = { version = "0.1", optional = true }
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.

@@ -1,9 +1,3 @@
-/target
-**/*.rs.bk
-wasm-pack.log
-build/
-.wrangler/
-node_modules/
-.env
-
-wrangler.toml
+target
+node_modules
+.wrangler

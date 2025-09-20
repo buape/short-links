@@ -12,12 +12,19 @@ struct ShortLink {
 }
 
 fn log_request(req: &Request) {
+    let coordinates = req.cf()
+        .and_then(|cf| cf.coordinates())
+        .unwrap_or_default();
+    let region = req.cf()
+        .and_then(|cf| cf.region())
+        .unwrap_or_else(|| "unknown region".to_string());
+    
     console_log!(
         "{} - [{}], located at: {:?}, within: {}",
         Date::now().to_string(),
         req.path(),
-        req.cf().coordinates().unwrap_or_default(),
-        req.cf().region().unwrap_or("unknown region".into())
+        coordinates,
+        region
     );
 }
 
@@ -42,14 +49,22 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
 }
 
 fn handle_root(host: &str) -> Result<Response> {
-    // Note: this is a pretty hacky way to strip the sub-domain, and redirect to the apex domain.
-    // Given that we can assume all Buape Go domains will be sub.domain.tld, this works.
-    let re = Regex::new(r"^[^.]+\.(.+)$").map_err(|e| worker::Error::from(e.to_string()))?;
-
-    let root_domain = if let Some(captures) = re.captures(host) {
-        captures.get(1).map_or(host, |m| m.as_str())
-    } else {
-        host
+    let root_domain = match host {
+        "bua.pe" => "buape.com",
+        host if host.ends_with(".bua.pe") => "bua.pe",
+        host => {
+            let re = Regex::new(r"^[^.]+\.(.+)$").map_err(|e| worker::Error::from(e.to_string()))?;
+            if let Some(captures) = re.captures(host) {
+                let extracted = captures.get(1).map_or(host, |m| m.as_str());
+                if extracted.contains('.') {
+                    extracted
+                } else {
+                    host
+                }
+            } else {
+                host
+            }
+        }
     };
 
     let redirect_url = format!("https://{}/", root_domain);
